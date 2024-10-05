@@ -1,5 +1,6 @@
 import express from 'express';
 import productsRouter from './public/routes/products.router.js';
+import cartsRouter from './public/routes/carts.router.js'
 
 const PORT = 8080
 const app = express();
@@ -14,6 +15,8 @@ const midd1 = (req, res, next) => {
 app.use(midd1);
 
 app.use('/api/products/' , productsRouter)
+app.use('/api/carts/' , cartsRouter)
+
 
 
 
