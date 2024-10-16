@@ -1,7 +1,7 @@
 <h2>Gestión de Productos en Tiempo Real</h2>
 
 <div id="productList">
-    <!-- La lista de productos se cargará aquí dinámicamente -->
+
 </div>
 
 <h3>Agregar Nuevo Producto</h3>
@@ -18,7 +18,6 @@
 <script>
     const socket = io();
 
-    // Función para actualizar la lista de productos
     function updateProductList(products) {
         const productList = document.getElementById('productList');
         productList.innerHTML = '';
@@ -46,25 +45,23 @@
             productList.appendChild(ul);
         }
 
-        // Agregar event listeners a los nuevos botones de eliminar
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function(e) {
             const productId = parseInt(this.getAttribute('data-id'), 10);
         if (!isNaN(productId)) {
             socket.emit('deleteProduct', productId);
         } else {
-            console.error('ID de producto inválido');
+            console.error('ID de producto inválido:', this.getAttribute('data-id'));
         }
     });
         });
     }
 
-    // Escuchar actualizaciones de productos
     socket.on('updateProducts', (products) => {
         updateProductList(products);
     });
 
-    // Manejar el envío del formulario para agregar productos
+
     document.getElementById('addProductForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const product = {

@@ -43,29 +43,43 @@ const socketServer = new Server(httpServer);
 socketServer.on('connection', async (socket) => {
     console.log('Nuevo cliente conectado');
 
-    // Enviar la lista de productos al cliente cuando se conecta
     const products = await productManager.getProducts();
     socket.emit('updateProducts', products);
 
-    // Escuchar el evento de nuevo producto
+
     socket.on('addProduct', async (product) => {
-        await productManager.createProduct(product);
-        const updatedProducts = await productManager.getProducts();
-        socketServer.emit('updateProducts', updatedProducts);
+        try {
+            // Obtener el último ID utilizado
+            const products = await productManager.getProducts();
+            const lastId = products.length > 0 ? Math.max(...products.map(p => p.id)) : 0;
+            
+            const newProduct = { ...product, id: lastId + 1 };
+
+            await productManager.createProduct(newProduct);
+            const updatedProducts = await productManager.getProducts();
+            socketServer.emit('updateProducts', updatedProducts);
+        } catch (error) {
+            console.error('Error al agregar producto:', error);
+            socket.emit('error', 'Error al agregar producto');
+        }
     });
 
     // Escuchar el evento de eliminar producto
     socket.on('deleteProduct', async (productId) => {
-        console.log('Intentando eliminar producto con ID:', productId); // Para depuración
+        console.log('Intentando eliminar producto con ID:', productId);
         if (typeof productId === 'number' && !isNaN(productId)) {
-            await productManager.deleteProduct(productId);
-            const updatedProducts = await productManager.getProducts();
-            io.emit('updateProducts', updatedProducts);
+            try {
+                await productManager.deleteProduct(productId);
+                const updatedProducts = await productManager.getProducts();
+                socketServer.emit('updateProducts', updatedProducts);
+            } catch (error) {
+                console.error('Error al eliminar el producto:', error);
+                socket.emit('error', 'Error al eliminar el producto');
+            }
         } else {
             console.error('ID de producto inválido:', productId);
+            socket.emit('error', 'ID de producto inválido');
         }
     });
-
-
 
 });
