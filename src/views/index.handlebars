@@ -1,0 +1,59 @@
+<link rel="stylesheet" href=" https://cdn.jsdelivr.net/npm/sweetalert2@11.14.1/dist/sweetalert2.min.css">
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.1/dist/sweetalert2.all.min.js"></script>
+
+<div>
+    <h4>hola! bienvenido <p id="client-id"></p></h4>
+</div>
+
+<div style="margin-top: 2em; border: 1px solid #555; padding: 1em; width: 360px;">
+    <p id="msgList" style="padding: 0; margin:0;"></p>
+</div>
+
+<div style="margin-top: 2em;">
+    <input class="form-control" type="text" id="msg" placeholder="escribir mensajes" style="width: 500px;">
+</div>
+
+<script type="module">
+    const msg = document.getElementById('msg')
+    const msgList = document.getElementById('msgList')
+
+
+
+    const products= {productName: ''}
+
+const  askName = async ()=>{
+    const result = await 
+            Swal.fire({
+    title: 'Prueba',
+    input: 'text',
+    text: 'Indica tu nombre para continuar',
+    inputValidator: val => !val &&'Indicar nombre!',
+    allowOutsideClick: false
+});
+    products.productName= result.value ||'producto sin cargar'
+
+}
+
+    const socketClient = io();
+    socketClient.on('connect',  async ()=>{
+        await askName()
+        socketClient.emit('mensaje', products)
+    })
+
+    socketClient.on('clientId', idClient =>{
+        document.getElementById ('client-id').innerText =idClient
+        console.log('Conectado con el servidor')
+    })
+    
+    msg.addEventListener('keyup', event =>{
+        if (event.key ==='Enter' && msg.value !=='' ){
+            socketClient.emit('newMessage', {user: products.productName, msg: msg.value})
+            console.log(msg.value)
+            msg.value = ''
+        }
+    })
+
+
+</script>
+
