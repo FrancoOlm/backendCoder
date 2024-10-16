@@ -2,58 +2,30 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.1/dist/sweetalert2.all.min.js"></script>
 
-<div>
-    <h4>hola! bienvenido <p id="client-id"></p></h4>
+<h2>Lista de Productos</h2>
+
+<div id="productList">
+    {{#if error}}
+        <p class="error">{{error}}</p>
+    {{else}}
+        {{#if products.length}}
+            <ul class="product-list">
+                {{#each products}}
+                    <li class="product-item" data-id="{{this.id}}">
+                        <h3>{{this.title}}</h3>
+                        <p>Descripción: {{this.description}}</p>
+                        <p>Precio: ${{this.price}}</p>
+                        <p>Categoría: {{this.category}}</p>
+                        <p>Stock: {{this.stock}}</p>
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>No hay productos disponibles.</p>
+        {{/if}}
+    {{/if}}
 </div>
 
-<div style="margin-top: 2em; border: 1px solid #555; padding: 1em; width: 360px;">
-    <p id="msgList" style="padding: 0; margin:0;"></p>
-</div>
-
-<div style="margin-top: 2em;">
-    <input class="form-control" type="text" id="msg" placeholder="escribir mensajes" style="width: 500px;">
-</div>
-
-<script type="module">
-    const msg = document.getElementById('msg')
-    const msgList = document.getElementById('msgList')
-
-
-
-    const products= {productName: ''}
-
-const  askName = async ()=>{
-    const result = await 
-            Swal.fire({
-    title: 'Prueba',
-    input: 'text',
-    text: 'Indica tu nombre para continuar',
-    inputValidator: val => !val &&'Indicar nombre!',
-    allowOutsideClick: false
-});
-    products.productName= result.value ||'producto sin cargar'
-
-}
-
-    const socketClient = io();
-    socketClient.on('connect',  async ()=>{
-        await askName()
-        socketClient.emit('mensaje', products)
-    })
-
-    socketClient.on('clientId', idClient =>{
-        document.getElementById ('client-id').innerText =idClient
-        console.log('Conectado con el servidor')
-    })
-    
-    msg.addEventListener('keyup', event =>{
-        if (event.key ==='Enter' && msg.value !=='' ){
-            socketClient.emit('newMessage', {user: products.productName, msg: msg.value})
-            console.log(msg.value)
-            msg.value = ''
-        }
-    })
-
-
-</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.1/dist/sweetalert2.all.min.js"></script>
 

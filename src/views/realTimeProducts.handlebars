@@ -1,0 +1,80 @@
+<h2>Gestión de Productos en Tiempo Real</h2>
+
+<div id="productList">
+    <!-- La lista de productos se cargará aquí dinámicamente -->
+</div>
+
+<h3>Agregar Nuevo Producto</h3>
+<form id="addProductForm">
+    <input type="text" id="title" placeholder="Título" required>
+    <input type="text" id="description" placeholder="Descripción" required>
+    <input type="number" id="price" placeholder="Precio" required>
+    <input type="text" id="category" placeholder="Categoría" required>
+    <input type="number" id="stock" placeholder="Stock" required>
+    <button type="submit">Agregar Producto</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    // Función para actualizar la lista de productos
+    function updateProductList(products) {
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+
+        if (products.length === 0) {
+            productList.innerHTML = '<p>No hay productos disponibles.</p>';
+        } else {
+            const ul = document.createElement('ul');
+            ul.className = 'product-list';
+
+            products.forEach(product => {
+                const li = document.createElement('li');
+                li.className = 'product-item';
+                li.innerHTML = `
+                    <h3>${product.title}</h3>
+                    <p>Descripción: ${product.description}</p>
+                    <p>Precio: $${product.price}</p>
+                    <p>Categoría: ${product.category}</p>
+                    <p>Stock: ${product.stock}</p>
+                    <button class="delete-btn" data-id="${product.id}">Eliminar</button>
+                `;
+                ul.appendChild(li);
+            });
+
+            productList.appendChild(ul);
+        }
+
+        // Agregar event listeners a los nuevos botones de eliminar
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+            const productId = parseInt(this.getAttribute('data-id'), 10);
+        if (!isNaN(productId)) {
+            socket.emit('deleteProduct', productId);
+        } else {
+            console.error('ID de producto inválido');
+        }
+    });
+        });
+    }
+
+    // Escuchar actualizaciones de productos
+    socket.on('updateProducts', (products) => {
+        updateProductList(products);
+    });
+
+    // Manejar el envío del formulario para agregar productos
+    document.getElementById('addProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const product = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            price: document.getElementById('price').value,
+            category: document.getElementById('category').value,
+            stock: document.getElementById('stock').value
+        };
+        socket.emit('addProduct', product);
+        this.reset();
+    });
+</script>
